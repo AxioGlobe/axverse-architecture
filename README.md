@@ -1,19 +1,13 @@
-# axverse-architecture
 # Axverse — ArchiCAD Intelligence Suite
-
 
 > **Status: Pre-build technical design phase**  
 > AxioGlobe is currently designing and architecting the Axverse plugin suite. No code has been written yet. This repository documents the technical architecture, API design, and agent system that will be built.
 
-
 ## Overview
-
 
 Axverse is a 22-tool ArchiCAD plugin suite that embeds live manufacturer data, AI intelligence, and real-time construction coordination directly inside ArchiCAD. It runs as a dockable panel — architects never leave their software. The intelligence runs underneath the interface they already know.
 
-
 ## Architecture
-
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -41,9 +35,7 @@ Axverse is a 22-tool ArchiCAD plugin suite that embeds live manufacturer data, A
     └─────────────────────────────────────────────────┘
 ```
 
-
 ## The 22 ArchiPower Tools
-
 
 ### Category 1 — Design Intelligence (8 tools)
 | # | Tool | AI Engine | Description |
@@ -57,7 +49,6 @@ Axverse is a 22-tool ArchiCAD plugin suite that embeds live manufacturer data, A
 | 07 | Daylighting and Solar Analyser | Gemini (spatial simulation) | Live daylight factor and solar gain analysis |
 | 08 | Design Code Navigator | Claude Sonnet | Natural language building code compliance |
 
-
 ### Category 2 — Documentation Intelligence (8 tools)
 | # | Tool | AI Engine | Description |
 |---|------|-----------|-------------|
@@ -70,7 +61,6 @@ Axverse is a 22-tool ArchiCAD plugin suite that embeds live manufacturer data, A
 | 15 | Contract Document Set | Claude + Gemini | Coordinated tender documents from model |
 | 16 | Post-Occupation Evaluation | Claude Sonnet | Automated building performance feedback loop |
 
-
 ### Category 3 — Smart Native Tools (6 tools)
 | # | Tool | Description |
 |---|------|-------------|
@@ -81,9 +71,7 @@ Axverse is a 22-tool ArchiCAD plugin suite that embeds live manufacturer data, A
 | 21 | Smart Paste | Manufacturer data relink + contextual suitability check |
 | 22 | Smart Mirror | Handed element detection + correct variant suggestion |
 
-
 ## Technology Stack
-
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -97,41 +85,32 @@ Axverse is a 22-tool ArchiCAD plugin suite that embeds live manufacturer data, A
 | Cross-platform | IFC 4 | Revit-to-ArchiCAD live sync |
 | Mobile | React Native | Contractor site app |
 
-
 ## API Design
-
 
 ```
 POST /api/v1/gdl/process
   Input: manufacturer_pdf (base64), product_category
   Output: gdl_object (ArchiCAD compatible), metadata, verification_status
 
-
 POST /api/v1/variation/detect
   Input: model_change_event, project_id, client_instruction_id
   Output: variation_notice_draft, scope_description, quantity
 
-
 GET /api/v1/boq/live/:project_id
   Output: line_items[], total_cost, currency, last_updated
-
 
 POST /api/v1/compliance/check
   Input: element_type, dimensions, jurisdiction_code
   Output: compliant (bool), clause_reference, remediation
-
 
 GET /api/v1/manufacturer/library
   Query: category, country, performance_rating
   Output: products[], gdl_object_url, verified_status
 ```
 
-
 ## The 39-Agent Orchestration System
 
-
 AxioGlobe runs 39 AI agents through n8n orchestration. Key agents include:
-
 
 - **Agent 1 — PA Agent**: Daily briefings, task management, email drafting
 - **Agent 8 — Lead Scraper**: Manufacturer and contractor database building
@@ -141,9 +120,7 @@ AxioGlobe runs 39 AI agents through n8n orchestration. Key agents include:
 - **Agent 31 — Drawing Alert**: ArchiCAD change to contractor notification
 - **Agent 39 — Property Connector**: BIM model to property listing pipeline
 
-
 ## Company
-
 
 **AxioGlobe (PTY) Ltd**  
 Registration: 2026/437531/07  
@@ -152,13 +129,10 @@ Headquarters: Polokwane, Limpopo, South Africa
 Website: https://axioglobe.co.za  
 Contact: info@axioglobe.co.za  
 
-
 ## Founder
-
 
 **Tebogo Boshomane** — Founder and CEO  
 LinkedIn: https://www.linkedin.com/in/tebogo-boshomane-873468231  
-
 
 ---
 *This repository documents planned architecture. AxioGlobe is in pre-build technical design phase.*
