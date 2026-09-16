@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: prompts
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: prompts
+    volumes:
+      - axioglobe_prompts_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prompts -d prompts"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    image: ghcr.io/f/prompts.chat:latest
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4444}:3000"
+    environment:
+      DATABASE_URL: "postgresql://prompts:${POSTGRES_PASSWORD}@db:5432/prompts?schema=public"
+      DIRECT_URL: "postgresql://prompts:${POSTGRES_PASSWORD}@db:5432/prompts?schema=public"
+      AUTH_SECRET: "${AUTH_SECRET}"
+      NODE_ENV: production
+
+      PCHAT_NAME: "AxioGlobe Prompt Registry"
+      PCHAT_DESCRIPTION: "AxioGlobe's private AI prompt, agent and workflow registry"
+      PCHAT_AUTH_PROVIDERS: "${PCHAT_AUTH_PROVIDERS:-credentials}"
+      PCHAT_ALLOW_REGISTRATION: "${PCHAT_ALLOW_REGISTRATION:-true}"
+      PCHAT_LOCALES: "en"
+      PCHAT_DEFAULT_LOCALE: "en"
+
+      PCHAT_FEATURE_PRIVATE_PROMPTS: "true"
+      PCHAT_FEATURE_CHANGE_REQUESTS: "true"
+      PCHAT_FEATURE_CATEGORIES: "true"
+      PCHAT_FEATURE_TAGS: "true"
+      PCHAT_FEATURE_COMMENTS: "true"
+      PCHAT_FEATURE_MCP: "true"
+      PCHAT_FEATURE_AI_SEARCH: "${PCHAT_FEATURE_AI_SEARCH:-false}"
+      PCHAT_FEATURE_AI_GENERATION: "${PCHAT_FEATURE_AI_GENERATION:-false}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  axioglobe_prompts_postgres:
