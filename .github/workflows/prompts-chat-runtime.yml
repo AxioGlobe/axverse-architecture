@@ -1,0 +1,59 @@
+name: Verify Prompts.chat runtime
+
+on:
+  push:
+    branches:
+      - deployment/prompts-chat-runtime
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_PASSWORD: axioglobe-ci-postgres-password
+      AUTH_SECRET: axioglobe-ci-auth-secret-change-only-for-ci
+      PORT: 4444
+      PCHAT_AUTH_PROVIDERS: credentials
+      PCHAT_ALLOW_REGISTRATION: "true"
+      PCHAT_FEATURE_AI_SEARCH: "false"
+      PCHAT_FEATURE_AI_GENERATION: "false"
+      OPENAI_API_KEY: ""
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose configuration
+        run: docker compose -f deploy/prompts-chat/compose.yml config
+
+      - name: Start AxioGlobe Prompt Registry
+        run: docker compose -f deploy/prompts-chat/compose.yml up -d
+
+      - name: Wait for health endpoint
+        shell: bash
+        run: |
+          for i in {1..60}; do
+            if curl --fail --silent http://localhost:4444/api/health > /dev/null; then
+              echo "AxioGlobe Prompt Registry is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Health endpoint did not become ready"
+          docker compose -f deploy/prompts-chat/compose.yml logs app
+          exit 1
+
+      - name: Show service status
+        if: always()
+        run: docker compose -f deploy/prompts-chat/compose.yml ps
+
+      - name: Show app logs on failure
+        if: failure()
+        run: docker compose -f deploy/prompts-chat/compose.yml logs app
+
+      - name: Stop runtime
+        if: always()
+        run: docker compose -f deploy/prompts-chat/compose.yml down
