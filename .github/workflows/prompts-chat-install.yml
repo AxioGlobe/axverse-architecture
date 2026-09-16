@@ -12,6 +12,29 @@ on:
 jobs:
   install:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: prompts_chat
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d prompts_chat"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/prompts_chat?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/prompts_chat?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: axioglobe-prompts-chat-ci-secret
+      CRON_SECRET: axioglobe-prompts-chat-ci-cron
+
     steps:
       - name: Checkout AxioGlobe repository and submodules
         uses: actions/checkout@v4
@@ -28,6 +51,10 @@ jobs:
       - name: Install Prompts.chat dependencies
         working-directory: integrations/prompts-chat
         run: npm ci
+
+      - name: Apply database migrations
+        working-directory: integrations/prompts-chat
+        run: npx prisma migrate deploy
 
       - name: Verify Prisma client generation
         working-directory: integrations/prompts-chat
