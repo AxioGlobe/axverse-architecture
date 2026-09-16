@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: axioglobe-prompt-registry
+    runtime: image
+    plan: free
+    region: frankfurt
+    image:
+      url: ghcr.io/f/prompts.chat:latest
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: axioglobe-prompts-db
+          property: connectionString
+      - key: DIRECT_URL
+        fromDatabase:
+          name: axioglobe-prompts-db
+          property: connectionString
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: PCHAT_NAME
+        value: AxioGlobe Prompt Registry
+      - key: PCHAT_DESCRIPTION
+        value: AxioGlobe private AI prompt, agent and workflow registry
+      - key: PCHAT_AUTH_PROVIDERS
+        value: credentials
+      - key: PCHAT_ALLOW_REGISTRATION
+        value: "true"
+      - key: PCHAT_LOCALES
+        value: en
+      - key: PCHAT_DEFAULT_LOCALE
+        value: en
+      - key: PCHAT_FEATURE_PRIVATE_PROMPTS
+        value: "true"
+      - key: PCHAT_FEATURE_CHANGE_REQUESTS
+        value: "true"
+      - key: PCHAT_FEATURE_CATEGORIES
+        value: "true"
+      - key: PCHAT_FEATURE_TAGS
+        value: "true"
+      - key: PCHAT_FEATURE_COMMENTS
+        value: "true"
+      - key: PCHAT_FEATURE_MCP
+        value: "true"
+      - key: PCHAT_FEATURE_AI_SEARCH
+        value: "false"
+      - key: PCHAT_FEATURE_AI_GENERATION
+        value: "false"
+
+databases:
+  - name: axioglobe-prompts-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "17"
+    ipAllowList: []
