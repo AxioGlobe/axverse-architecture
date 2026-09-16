@@ -1,0 +1,35 @@
+name: Verify Prompts.chat integration
+
+on:
+  push:
+    branches:
+      - integration/prompts-chat
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout AxioGlobe repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: integrations/prompts-chat/package-lock.json
+
+      - name: Install Prompts.chat dependencies
+        working-directory: integrations/prompts-chat
+        run: npm ci
+
+      - name: Verify Prisma client generation
+        working-directory: integrations/prompts-chat
+        run: npx prisma generate
+
+      - name: Run Prompts.chat tests
+        working-directory: integrations/prompts-chat
+        run: npm test

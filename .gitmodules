@@ -1,0 +1,3 @@
+[submodule "integrations/prompts-chat"]
+	path = integrations/prompts-chat
+	url = https://github.com/f/prompts.chat.git
