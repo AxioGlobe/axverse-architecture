@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - integration/prompts-chat
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
