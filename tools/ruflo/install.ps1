@@ -40,7 +40,7 @@ Set-Location $RepoRoot
 
 Write-Host ''
 Write-Host 'Initializing the full Ruflo agent harness...' -ForegroundColor Cyan
-& npx --yes "ruflo@$RufloVersion" init --preset full --yes --skip-prompts --no-signup --no-codex-detect
+& npx --yes "ruflo@$RufloVersion" init --preset full --yes --skip-prompts --no-signup --no-codex-detect --force
 if ($LASTEXITCODE -ne 0) {
     Write-Host 'Ruflo initialization failed.' -ForegroundColor Red
     exit $LASTEXITCODE
