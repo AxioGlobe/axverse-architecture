@@ -39,6 +39,7 @@ jobs:
           --no-signup
           --no-codex-detect
           --no-install
+          --force
 
       - name: Run Ruflo doctor
         run: npx --yes ruflo@3.42.0 doctor || true
