@@ -1,0 +1,79 @@
+name: Bootstrap Ruflo development harness
+
+on:
+  push:
+    branches:
+      - integration/ruflo-development-harness
+    paths:
+      - '.github/workflows/ruflo-bootstrap.yml'
+      - 'tools/ruflo/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout AxioGlobe repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify Ruflo CLI
+        run: npx --yes ruflo@3.42.0 --version
+
+      - name: Initialize full Ruflo harness
+        run: >-
+          npx --yes ruflo@3.42.0 init
+          --preset full
+          --yes
+          --skip-prompts
+          --no-signup
+          --no-codex-detect
+          --no-install
+          --force
+
+      - name: Run Ruflo doctor
+        run: npx --yes ruflo@3.42.0 doctor || true
+
+      - name: Verify generated development scaffold
+        shell: bash
+        run: |
+          test -f CLAUDE.md
+          test -d .claude
+          test -f .claude/settings.json
+          test -d .claude-flow
+          echo 'Ruflo scaffold generated successfully.'
+          find .claude -maxdepth 2 -type f | sort | head -80
+          find .claude-flow -maxdepth 2 -type f | sort | head -80
+
+      - name: Remove platform-local and runtime-only Ruflo artifacts before commit
+        shell: bash
+        run: |
+          rm -f .claude/settings.json
+          find .claude .claude-flow -type f \( -name '*.db' -o -name '*.db-shm' -o -name '*.db-wal' -o -name '*.log' -o -name '*.lock' \) -delete 2>/dev/null || true
+          rm -rf .claude/sessions .claude/worktrees .claude/projects 2>/dev/null || true
+
+      - name: Commit generated Ruflo project configuration
+        shell: bash
+        run: |
+          git config user.name 'AxioGlobe Automation'
+          git config user.email 'info@axioglobe.co.za'
+
+          git add CLAUDE.md .claude .claude-flow .agents .mcp.json 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo 'No Ruflo scaffold changes to commit.'
+            exit 0
+          fi
+
+          git commit -m 'Bootstrap Ruflo 3.42.0 development harness [ruflo-bootstrap]'
+          git push origin HEAD:integration/ruflo-development-harness

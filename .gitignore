@@ -1,0 +1,10 @@
+# Ruflo platform-local and runtime artifacts
+.claude/settings.json
+.claude/sessions/
+.claude/worktrees/
+.claude/projects/
+.claude-flow/**/*.db
+.claude-flow/**/*.db-shm
+.claude-flow/**/*.db-wal
+.claude-flow/**/*.log
+.claude-flow/**/*.lock
