@@ -54,9 +54,10 @@ jobs:
           find .claude -maxdepth 2 -type f | sort | head -80
           find .claude-flow -maxdepth 2 -type f | sort | head -80
 
-      - name: Remove runtime-only Ruflo artifacts before commit
+      - name: Remove platform-local and runtime-only Ruflo artifacts before commit
         shell: bash
         run: |
+          rm -f .claude/settings.json
           find .claude .claude-flow -type f \( -name '*.db' -o -name '*.db-shm' -o -name '*.db-wal' -o -name '*.log' -o -name '*.lock' \) -delete 2>/dev/null || true
           rm -rf .claude/sessions .claude/worktrees .claude/projects 2>/dev/null || true
 
