@@ -19,13 +19,14 @@ Write-Host ''
 Write-Host 'AxioGlobe Prompt Registry' -ForegroundColor Cyan
 Write-Host '=========================' -ForegroundColor Cyan
 
-try {
-    docker version | Out-Null
-} catch {
-    Write-Host 'Docker Desktop is not running or is not installed.' -ForegroundColor Red
-    Write-Host 'Install/start Docker Desktop, then run this script again.'
+Write-Host 'Checking Docker Desktop engine...' -ForegroundColor Cyan
+docker info *> $null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host 'Docker Desktop is installed, but the Docker engine is not running.' -ForegroundColor Red
+    Write-Host 'Open Docker Desktop, wait until the engine is running, then run this script again.'
     exit 1
 }
+Write-Host 'Docker engine is running.' -ForegroundColor Green
 
 if (-not (Test-Path $envFile)) {
     $postgresPassword = New-HexSecret 24
@@ -47,9 +48,20 @@ OPENAI_API_KEY=
 
 Write-Host 'Pulling the Prompts.chat image...' -ForegroundColor Cyan
 docker compose --env-file $envFile -f $composeFile pull
+if ($LASTEXITCODE -ne 0) {
+    Write-Host 'Failed to pull container images.' -ForegroundColor Red
+    exit 1
+}
 
 Write-Host 'Starting PostgreSQL and AxioGlobe Prompt Registry...' -ForegroundColor Cyan
 docker compose --env-file $envFile -f $composeFile up -d
+if ($LASTEXITCODE -ne 0) {
+    Write-Host 'Failed to start containers.' -ForegroundColor Red
+    exit 1
+}
+
+Write-Host 'Container status:' -ForegroundColor Cyan
+docker compose --env-file $envFile -f $composeFile ps
 
 $url = 'http://localhost:4444'
 $healthUrl = "$url/api/health"
@@ -75,6 +87,10 @@ if ($ready) {
 } else {
     Write-Host ''
     Write-Host 'Containers started, but the app health check is not ready yet.' -ForegroundColor Yellow
+    Write-Host 'Application status:'
+    docker compose --env-file $envFile -f $composeFile ps
+    Write-Host ''
     Write-Host 'Run this command to inspect the application logs:'
-    Write-Host "docker compose --env-file `"$envFile`" -f `"$composeFile`" logs -f app"
+    Write-Host "docker compose --env-file `"$envFile`" -f `"$composeFile`" logs --tail=200 app"
+    exit 1
 }
