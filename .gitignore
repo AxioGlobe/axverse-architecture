@@ -8,3 +8,6 @@
 .claude-flow/**/*.db-wal
 .claude-flow/**/*.log
 .claude-flow/**/*.lock
+
+# AxioGlobe dynamic agent execution artifacts
+.axioglobe-runs/
