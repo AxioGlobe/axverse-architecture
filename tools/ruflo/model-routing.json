@@ -130,7 +130,10 @@
       "enhance",
       "extend",
       "api",
-      "database"
+      "database",
+      "build",
+      "create",
+      "develop"
     ],
     "lowKeywords": [
       "simple",
@@ -163,6 +166,23 @@
     ],
     "crossDomainBonus": 0.12,
     "highRiskBonus": 0.22,
-    "longTaskBonus": 0.1
+    "longTaskBonus": 0.1,
+    "implementationIntents": [
+      "build",
+      "implement",
+      "develop",
+      "create",
+      "feature"
+    ],
+    "platformKeywords": [
+      "archicad",
+      "revit",
+      "gdl",
+      "plugin",
+      "add-in",
+      "bim"
+    ],
+    "featureBuildBonus": 0.12,
+    "platformFeatureBonus": 0.12
   }
 }
