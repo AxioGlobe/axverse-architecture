@@ -33,6 +33,12 @@ let complexity = 0.18;
 complexity += Math.min(hitCount(routing.scoring.highKeywords) * 0.075, 0.45);
 complexity += Math.min(hitCount(routing.scoring.mediumKeywords) * 0.035, 0.20);
 complexity -= Math.min(hitCount(routing.scoring.lowKeywords) * 0.04, 0.12);
+
+const implementationIntent = hitCount(routing.scoring.implementationIntents || []) > 0;
+const platformFeature = hitCount(routing.scoring.platformKeywords || []) > 0;
+if (implementationIntent) complexity += routing.scoring.featureBuildBonus || 0;
+if (implementationIntent && platformFeature) complexity += routing.scoring.platformFeatureBonus || 0;
+
 if (words.length > 80) complexity += routing.scoring.longTaskBonus;
 const highRisk = hitCount(routing.scoring.highRiskKeywords) > 0;
 if (highRisk) complexity += routing.scoring.highRiskBonus;
@@ -82,16 +88,48 @@ const selected = [];
 function add(agent) {
   if (agent && !selected.some(x => x.slug === agent.slug) && selected.length < maxAgents) selected.push(agent);
 }
-add(registry.agents.find(a => a.slug === "axioglobe-chief-coordinator"));
-if (complexity >= 0.35) add(scored.find(a => a.rufloType === "architect" && a.slug !== "axioglobe-chief-coordinator"));
-for (const a of scored) if (a.matchScore > 0) add(a);
-add(registry.agents.find(a => a.slug === "axioglobe-qa-lead"));
-add(registry.agents.find(a => a.slug === "axioglobe-final-review"));
+
+const coordinator = registry.agents.find(a => a.slug === "axioglobe-chief-coordinator");
+const qaLead = registry.agents.find(a => a.slug === "axioglobe-qa-lead");
+const finalReview = registry.agents.find(a => a.slug === "axioglobe-final-review");
+const reservedSlugs = new Set([qaLead?.slug, finalReview?.slug].filter(Boolean));
+
+add(coordinator);
+
+// Reserve the final two slots for QA + final review before filling the squad.
+if (complexity >= 0.35 && selected.length < Math.max(1, maxAgents - 2)) {
+  add(scored.find(a => a.rufloType === "architect" && a.slug !== coordinator?.slug && !reservedSlugs.has(a.slug)));
+}
+
+for (const a of scored) {
+  if (selected.length >= Math.max(1, maxAgents - 2)) break;
+  if (reservedSlugs.has(a.slug)) continue;
+  if (a.matchScore > 0) add(a);
+}
+
+add(qaLead);
+add(finalReview);
 
 const baseTier = tierFor(complexity);
 const reasoning = reasoningFor(complexity);
+
+const reasoningOrder = ["none","low","medium","high","xhigh","max"];
+function maxReasoning(a,b) {
+  return reasoningOrder.indexOf(a) >= reasoningOrder.indexOf(b) ? a : b;
+}
+const tierReasoningFloor = { luna:"none", terra:"low", sol:"medium" };
+
 const squad = selected.map(a => {
   const tier = maxTier(baseTier, a.modelFloor);
+  let agentReasoning = maxReasoning(reasoning, tierReasoningFloor[tier] || "none");
+
+  if (a.rufloType === "hierarchical-coordinator" || a.rufloType === "architect") {
+    agentReasoning = maxReasoning(agentReasoning, "medium");
+  }
+  if (highRisk && (a.rufloType === "reviewer" || a.rufloType === "tester")) {
+    agentReasoning = maxReasoning(agentReasoning, "high");
+  }
+
   return {
     id:a.id,
     slug:a.slug,
@@ -100,7 +138,7 @@ const squad = selected.map(a => {
     category:a.category,
     modelTier:tier,
     model:routing.models[tier].id,
-    reasoning,
+    reasoning:agentReasoning,
     matchScore:a.matchScore
   };
 });
