@@ -1,8 +1,8 @@
-$ErrorActionPreference = 'Stop'
-
 param(
     [string]$Model = 'gpt-5.6-sol'
 )
+
+$ErrorActionPreference = 'Stop'
 
 $RufloVersion = '3.42.0'
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
