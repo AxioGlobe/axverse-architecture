@@ -88,10 +88,21 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Step 'Testing OpenAI connectivity'
-& npx --yes "ruflo@$RufloVersion" providers test -p openai
-if ($LASTEXITCODE -ne 0) {
+# Ruflo 3.42.0 can hit a Windows/libuv UV_HANDLE_CLOSING assertion after
+# successfully completing the provider test. Capture output and trust the
+# explicit PASS marker instead of LASTEXITCODE alone.
+$providerTestOutput = (& npx --yes "ruflo@$RufloVersion" providers test -p openai 2>&1 | Out-String)
+Write-Host $providerTestOutput
+
+$providerPassed = (
+    $providerTestOutput -match 'PASS\s+OpenAI:\s+Connected successfully' -or
+    $providerTestOutput -match '1/1\s+provider\(s\)\s+passed'
+)
+
+if (-not $providerPassed) {
     throw 'OpenAI provider connectivity test failed. Check the API key, project access, billing, or network connection.'
 }
+
 Write-Host 'OpenAI provider test passed.' -ForegroundColor Green
 
 Write-Step 'Restarting Ruflo daemon with OpenAI environment'
