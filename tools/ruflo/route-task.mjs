@@ -73,6 +73,46 @@ function reasoningFor(score) {
   return routing.reasoningByComplexity.find(x => score <= x.max)?.effort ?? "high";
 }
 
+const featureSignals = [
+  {
+    terms:["wall assembly","wall builder","wall assembly builder"],
+    boosts:{
+      "axioglobe-archicad-elements":14,
+      "axioglobe-archicad-properties":12,
+      "axioglobe-bim-data-model":10,
+      "axioglobe-bim-workflow":9,
+      "axioglobe-archicad-classification":8,
+      "axioglobe-product-normalization":7
+    },
+    penalties:{
+      "axioglobe-archicad-palette-ui":-5,
+      "axioglobe-archicad-event-hooks":-5
+    }
+  },
+  {
+    terms:["product dna","product browser","manufacturer product"],
+    boosts:{
+      "axioglobe-product-normalization":14,
+      "axioglobe-bim-data-model":12,
+      "axioglobe-search-engineer":10,
+      "axioglobe-api-engineer":9,
+      "axioglobe-document-intelligence":8
+    }
+  },
+  {
+    terms:["gdl engine","gdl object","living object"],
+    boosts:{
+      "axioglobe-gdl-engine-lead":15,
+      "axioglobe-gdl-generator":13,
+      "axioglobe-gdl-validation":11,
+      "axioglobe-gdl-parameters":10,
+      "axioglobe-gdl-geometry":10
+    }
+  }
+];
+
+const activeFeatureSignals = featureSignals.filter(s => s.terms.some(has));
+
 const scored = registry.agents.map(a => {
   let score = 0;
   for (const t of a.tags) if (has(t.replace(/-/g," "))) score += 5;
@@ -81,6 +121,12 @@ const scored = registry.agents.map(a => {
   if (complexity >= 0.40 && /architect/.test(a.rufloType)) score += 3;
   if (/test|fix|debug|build|implement|code/.test(lower) && /tester|debugger|coder|optimizer/.test(a.rufloType)) score += 3;
   if (/review|audit|security|release|production/.test(lower) && /reviewer|tester/.test(a.rufloType)) score += 4;
+
+  for (const signal of activeFeatureSignals) {
+    score += signal.boosts?.[a.slug] || 0;
+    score += signal.penalties?.[a.slug] || 0;
+  }
+
   return { ...a, matchScore:score };
 }).sort((a,b)=>b.matchScore-a.matchScore);
 
