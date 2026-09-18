@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "1.0",
+  "provider": "openai",
+  "models": {
+    "luna": {
+      "id": "gpt-5.6-luna",
+      "reasoning": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "purpose": "cost-sensitive and high-volume work"
+    },
+    "terra": {
+      "id": "gpt-5.6-terra",
+      "reasoning": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "purpose": "balanced intelligence and cost"
+    },
+    "sol": {
+      "id": "gpt-5.6-sol",
+      "reasoning": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "purpose": "complex professional reasoning and coding"
+    }
+  },
+  "thresholds": {
+    "lunaMax": 0.34,
+    "terraMax": 0.67,
+    "solMin": 0.68
+  },
+  "reasoningByComplexity": [
+    {
+      "max": 0.15,
+      "effort": "none"
+    },
+    {
+      "max": 0.34,
+      "effort": "low"
+    },
+    {
+      "max": 0.55,
+      "effort": "medium"
+    },
+    {
+      "max": 0.75,
+      "effort": "high"
+    },
+    {
+      "max": 0.9,
+      "effort": "xhigh"
+    },
+    {
+      "max": 1,
+      "effort": "max"
+    }
+  ],
+  "escalation": {
+    "enabled": true,
+    "order": [
+      "luna",
+      "terra",
+      "sol"
+    ],
+    "triggers": [
+      "low-confidence",
+      "test-failure",
+      "retry-limit",
+      "high-risk",
+      "cross-domain",
+      "security-sensitive",
+      "production-change"
+    ],
+    "maxAttemptsPerTier": 2
+  },
+  "scoring": {
+    "highKeywords": [
+      "architect",
+      "design",
+      "refactor",
+      "optimize",
+      "security",
+      "audit",
+      "complex",
+      "analyze",
+      "investigate",
+      "debug",
+      "performance",
+      "scale",
+      "distributed",
+      "concurrent",
+      "algorithm",
+      "system",
+      "integration",
+      "migration",
+      "production",
+      "reliability",
+      "auth",
+      "gdl",
+      "archicad",
+      "revit"
+    ],
+    "mediumKeywords": [
+      "implement",
+      "feature",
+      "add",
+      "update",
+      "modify",
+      "fix",
+      "test",
+      "review",
+      "validate",
+      "check",
+      "improve",
+      "enhance",
+      "extend",
+      "api",
+      "database"
+    ],
+    "lowKeywords": [
+      "simple",
+      "typo",
+      "comment",
+      "format",
+      "rename",
+      "move",
+      "copy",
+      "delete",
+      "documentation",
+      "readme",
+      "config",
+      "version",
+      "bump"
+    ],
+    "highRiskKeywords": [
+      "security",
+      "authentication",
+      "authorization",
+      "secrets",
+      "production",
+      "migration",
+      "database",
+      "privacy",
+      "compliance",
+      "concurrency",
+      "payments",
+      "permissions"
+    ],
+    "crossDomainBonus": 0.12,
+    "highRiskBonus": 0.22,
+    "longTaskBonus": 0.1
+  }
+}
