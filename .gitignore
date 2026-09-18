@@ -11,3 +11,6 @@
 
 # AxioGlobe dynamic agent execution artifacts
 .axioglobe-runs/
+
+# Local ChatGPT Desktop / Codex quantitative run artifacts
+.axioglobe-codex-runs/
