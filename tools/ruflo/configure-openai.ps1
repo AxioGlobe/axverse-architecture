@@ -51,20 +51,31 @@ Write-Host "Ruflo version: $RufloVersion"
 Write-Host "Default model: $Model"
 
 Write-Step 'Collecting OpenAI API key securely'
-Write-Host 'Paste the OpenAI API key into the hidden prompt below.' -ForegroundColor Yellow
-Write-Host 'The key will not be printed and will not be written into Git.' -ForegroundColor Yellow
-$secureKey = Read-Host 'OpenAI API key' -AsSecureString
-$apiKey = ConvertFrom-Secure $secureKey
 
-if ([string]::IsNullOrWhiteSpace($apiKey) -or $apiKey.Length -lt 20) {
-    throw 'The API key was empty or did not look valid.'
+$apiKey = $env:OPENAI_API_KEY
+if ([string]::IsNullOrWhiteSpace($apiKey)) {
+    $apiKey = [Environment]::GetEnvironmentVariable('OPENAI_API_KEY', 'User')
 }
 
-# Keep the key out of the repository. Ruflo can resolve OPENAI_API_KEY
-# from the process environment; make it persistent for this Windows user
-# and immediately available to the current process.
-[Environment]::SetEnvironmentVariable('OPENAI_API_KEY', $apiKey, 'User')
-$env:OPENAI_API_KEY = $apiKey
+if ([string]::IsNullOrWhiteSpace($apiKey) -or $apiKey.Length -lt 20) {
+    Write-Host 'No usable OPENAI_API_KEY was found in the VM environment.' -ForegroundColor Yellow
+    Write-Host 'Paste the OpenAI API key into the hidden prompt below.' -ForegroundColor Yellow
+    Write-Host 'The key will not be printed and will not be written into Git.' -ForegroundColor Yellow
+
+    $secureKey = Read-Host 'OpenAI API key' -AsSecureString
+    $apiKey = ConvertFrom-Secure $secureKey
+
+    if ([string]::IsNullOrWhiteSpace($apiKey) -or $apiKey.Length -lt 20) {
+        throw 'The API key was empty or did not look valid.'
+    }
+
+    [Environment]::SetEnvironmentVariable('OPENAI_API_KEY', $apiKey, 'User')
+    $env:OPENAI_API_KEY = $apiKey
+}
+else {
+    $env:OPENAI_API_KEY = $apiKey
+    Write-Host 'Existing OPENAI_API_KEY found in the Windows user environment.' -ForegroundColor Green
+}
 
 Write-Host 'OPENAI_API_KEY stored in the Windows user environment.' -ForegroundColor Green
 
