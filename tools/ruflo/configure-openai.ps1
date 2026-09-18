@@ -98,8 +98,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Step 'Ensuring hierarchical AxioGlobe swarm exists'
-& npx --yes "ruflo@$RufloVersion" swarm status *> $null
-if ($LASTEXITCODE -ne 0) {
+$swarmStatus = (& npx --yes "ruflo@$RufloVersion" swarm status 2>&1 | Out-String)
+$hasActiveSwarm = (
+    $LASTEXITCODE -eq 0 -and
+    $swarmStatus -notmatch 'No active swarm' -and
+    $swarmStatus -match 'Swarm Status|swarm-'
+)
+
+if (-not $hasActiveSwarm) {
+    Write-Host 'No active Ruflo swarm detected. Initializing hierarchical AxioGlobe swarm...' -ForegroundColor Yellow
     & npx --yes "ruflo@$RufloVersion" swarm init --topology hierarchical
     if ($LASTEXITCODE -ne 0) {
         throw 'Failed to initialize Ruflo swarm.'
