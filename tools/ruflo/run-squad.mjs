@@ -14,6 +14,15 @@ function arg(name, fallback = null) {
 }
 function flag(name) { return process.argv.includes(name); }
 function safeName(s) { return s.replace(/[^a-zA-Z0-9._-]+/g, "-"); }
+function isFatalBillingError(message) {
+  const m = String(message || "").toLowerCase();
+  return m.includes("no credits remaining") ||
+    m.includes("credit_balance_exhausted") ||
+    m.includes("insufficient_quota") ||
+    m.includes("organization_usage_limit_exceeded") ||
+    m.includes("organization_spend_limit_exceeded") ||
+    m.includes("project_spend_limit_exceeded");
+}
 
 const task = arg("--task");
 if (!task) {
@@ -149,7 +158,8 @@ async function runAgent(member) {
       reasoning:member.reasoning,
       durationMs:Date.now()-started,
       success:false,
-      error:error instanceof Error ? error.message : String(error)
+      error:error instanceof Error ? error.message : String(error),
+      fatalBilling:isFatalBillingError(error instanceof Error ? error.message : String(error))
     };
     fs.writeFileSync(path.join(runDir, safeName(member.slug)+".json"), JSON.stringify(record,null,2));
     return record;
@@ -159,17 +169,28 @@ async function runAgent(member) {
 async function mapLimit(items, limit, fn) {
   const results = new Array(items.length);
   let next = 0;
+  let fatalBilling = false;
+
   async function worker() {
     while (true) {
+      if (fatalBilling) return;
       const i = next++;
       if (i >= items.length) return;
+
       results[i] = await fn(items[i], i);
       const status = results[i].success ? "OK" : "FAIL";
       console.log("[" + status + "] " + items[i].slug + " -> " + items[i].model);
+
+      if (results[i].fatalBilling) {
+        fatalBilling = true;
+        console.error("\n[FATAL] OpenAI billing/quota blocked the run. Remaining queued agents will not be started.");
+        return;
+      }
     }
   }
+
   await Promise.all(Array.from({length:Math.min(limit, items.length)}, worker));
-  return results;
+  return results.filter(Boolean);
 }
 
 console.log("\nAxioGlobe AI Squad Execution");
@@ -226,7 +247,8 @@ const manifest = {
     reasoning:r.reasoning,
     success:r.success,
     usage:r.usage || null,
-    error:r.error || null
+    error:r.error || null,
+    fatalBilling:Boolean(r.fatalBilling)
   })),
   synthesis:synthesis ? {model:synthesis.model,reasoning:synthesis.reasoning,usage:synthesis.usage} : null
 };
