@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "windows-v1-core",
+      "displayName": "Axverse V1 Core - Windows",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/v1-core",
+      "architecture": "x64",
+      "cacheVariables": {
+        "AXIOGLOBE_BUILD_TESTS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-v1-core-debug",
+      "configurePreset": "windows-v1-core",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-v1-core-release",
+      "configurePreset": "windows-v1-core",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "windows-v1-core-test",
+      "configurePreset": "windows-v1-core",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}
