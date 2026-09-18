@@ -53,3 +53,31 @@ The **role registry** and **model router** are AxioGlobe-owned. Ruflo remains th
 ## Escalation
 
 The policy escalates Luna → Terra → Sol for high-risk work, cross-domain complexity, low confidence, failed tests or repeated failures. The task runner should record outcomes so routing thresholds can later be tuned from real AxioGlobe data.
+
+
+## Execute a routed OpenAI squad
+
+Planning and execution are separate on purpose.
+
+Preview the squad/model choices without making API calls:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\ruflo\invoke-squad.ps1 -Task "Build the Archicad Wall Assembly Builder"
+```
+
+Execute the routed specialists through the OpenAI Responses API and produce a coordinator synthesis:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\ruflo\run-squad.ps1 -Task "Build the Archicad Wall Assembly Builder" -MaxAgents 8 -Concurrency 3
+```
+
+Execution artifacts are written to `.axioglobe-runs/<run-id>/` and ignored by Git. Each run records the routing plan, per-agent model/reasoning choice, token usage returned by the API, success/failure state, specialist outputs, and coordinator synthesis.
+
+## Responsibility split
+
+- **Ruflo:** swarm lifecycle, role coordination, memory, hooks, development orchestration.
+- **AxioGlobe Agent Registry:** the 100 permanent specialist role definitions and prompts.
+- **AxioGlobe Model Router:** complexity/risk analysis, squad selection, Luna/Terra/Sol selection, reasoning effort, escalation policy.
+- **OpenAI Responses API:** model execution for the selected specialists.
+
+This separation keeps AxioGlobe's model policy independent from Ruflo's native Claude-oriented routing tiers.
