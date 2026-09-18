@@ -87,24 +87,27 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Ruflo OpenAI provider configuration failed.'
 }
 
-Write-Step 'Testing OpenAI connectivity'
-# Ruflo 3.42.0 can hit a Windows/libuv UV_HANDLE_CLOSING assertion after
-# successfully completing the provider test. Capture output and trust the
-# explicit PASS marker instead of LASTEXITCODE alone.
-$providerTestOutput = (& npx --yes "ruflo@$RufloVersion" providers test -p openai 2>&1 | Out-String)
-Write-Host $providerTestOutput
+Write-Step 'Testing OpenAI connectivity directly'
+# Ruflo 3.42.0 has a Windows/libuv UV_HANDLE_CLOSING crash in the provider
+# test command. Validate the same credentials directly against OpenAI instead.
+try {
+    $headers = @{
+        Authorization = "Bearer $env:OPENAI_API_KEY"
+    }
 
-$providerPassed = (
-    $providerTestOutput -match 'PASS\s+OpenAI:\s+Connected successfully' -or
-    $providerTestOutput -match '1/1\s+provider\(s\)\s+passed'
-)
+    $modelCheck = Invoke-RestMethod -Method Get -Uri "https://api.openai.com/v1/models/$Model" -Headers $headers -TimeoutSec 20
 
-if (-not $providerPassed) {
-    throw 'OpenAI provider connectivity test failed. Check the API key, project access, billing, or network connection.'
+    if (-not $modelCheck.id -or $modelCheck.id -ne $Model) {
+        throw "OpenAI responded, but model '$Model' was not confirmed."
+    }
+
+    Write-Host "PASS OpenAI: Connected successfully" -ForegroundColor Green
+    Write-Host "PASS Model access: $($modelCheck.id)" -ForegroundColor Green
 }
-
-Write-Host 'OpenAI provider test passed.' -ForegroundColor Green
-
+catch {
+    $detail = $_.Exception.Message
+    throw "OpenAI API verification failed: $detail"
+}
 Write-Step 'Restarting Ruflo daemon with OpenAI environment'
 & npx --yes "ruflo@$RufloVersion" daemon stop *> $null
 Start-Sleep -Seconds 2
