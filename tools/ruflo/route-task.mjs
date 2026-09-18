@@ -139,7 +139,7 @@ if (flag("--json")) {
 if (flag("--spawn")) {
   console.log("\\nSpawning selected Ruflo squad...");
   for (const a of squad) {
-    const result = spawnSync("npx", ["--yes", "ruflo@3.42.0", "agent", "spawn", "-t", a.rufloType, "--name", a.slug, "--model", a.model], {
+    const result = spawnSync("npx", ["--yes", "ruflo@3.42.0", "agent", "spawn", "-t", a.rufloType, "--name", a.slug], {
       cwd:path.resolve(__dirname, "..", ".."),
       stdio:"inherit",
       shell:process.platform === "win32"
