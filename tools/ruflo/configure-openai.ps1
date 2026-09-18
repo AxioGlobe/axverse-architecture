@@ -1,5 +1,5 @@
 param(
-    [string]$Model = 'gpt-5.6-sol'
+    [string]$Model = 'gpt-5.6-terra'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,26 +19,6 @@ function ConvertFrom-Secure([Security.SecureString]$Secure) {
     }
     finally {
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
-    }
-}
-
-function Ensure-Agent {
-    param(
-        [string]$Type,
-        [string]$Name,
-        [string]$ModelName
-    )
-
-    $listOutput = (& npx --yes "ruflo@$RufloVersion" agent list 2>&1 | Out-String)
-    if ($listOutput -match [regex]::Escape($Name)) {
-        Write-Host "Agent already present: $Name" -ForegroundColor Green
-        return
-    }
-
-    Write-Host "Spawning agent: $Name ($Type)" -ForegroundColor Cyan
-    & npx --yes "ruflo@$RufloVersion" agent spawn -t $Type --name $Name --model $ModelName
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to spawn agent '$Name'."
     }
 }
 
@@ -129,12 +109,19 @@ else {
     Write-Host 'Existing Ruflo swarm detected.' -ForegroundColor Green
 }
 
-Write-Step 'Starting AxioGlobe core AI team'
-Ensure-Agent -Type 'hierarchical-coordinator' -Name 'axioglobe-coordinator' -ModelName $Model
-Ensure-Agent -Type 'architect' -Name 'axioglobe-architect' -ModelName $Model
-Ensure-Agent -Type 'coder' -Name 'axioglobe-coder' -ModelName $Model
-Ensure-Agent -Type 'tester' -Name 'axioglobe-tester' -ModelName $Model
-Ensure-Agent -Type 'reviewer' -Name 'axioglobe-reviewer' -ModelName $Model
+Write-Step 'Validating AxioGlobe 100-agent registry'
+$registryPath = Join-Path $RepoRoot 'tools\ruflo\agents\registry.json'
+if (-not (Test-Path $registryPath)) {
+    throw 'AxioGlobe agent registry was not found.'
+}
+
+$registry = Get-Content $registryPath -Raw | ConvertFrom-Json
+if ($registry.totalAgents -ne 100 -or $registry.agents.Count -ne 100) {
+    throw "Expected 100 registered AxioGlobe agents, found $($registry.agents.Count)."
+}
+
+Write-Host "PASS Agent registry: 100 specialist roles available." -ForegroundColor Green
+Write-Host 'Agents are activated dynamically per task; they are not permanently pinned to one model.' -ForegroundColor Green
 
 Write-Step 'Final verification'
 & npx --yes "ruflo@$RufloVersion" providers list -a
@@ -144,7 +131,9 @@ Write-Step 'Final verification'
 
 Write-Host ''
 Write-Host 'AxioGlobe Ruflo is configured to use OpenAI.' -ForegroundColor Green
-Write-Host "Default model: $Model" -ForegroundColor Green
+Write-Host "Ruflo fallback model: $Model" -ForegroundColor Green
+Write-Host 'Dynamic task routing: Luna -> Terra -> Sol' -ForegroundColor Green
+Write-Host 'Use tools\ruflo\invoke-squad.ps1 to select task-specific squads.' -ForegroundColor Green
 Write-Host 'The API key was not written to the Git repository.' -ForegroundColor Green
 Write-Host ''
 Write-Host 'Important: this connects Ruflo to the OpenAI API, not to this specific ChatGPT conversation.' -ForegroundColor Yellow
