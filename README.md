@@ -1,138 +1,116 @@
-# Axverse — ArchiCAD Intelligence Suite
+# Axverse — AxioGlobe Design & BIM Surface
 
-> **Status: Pre-build technical design phase**  
-> AxioGlobe is currently designing and architecting the Axverse plugin suite. No code has been written yet. This repository documents the technical architecture, API design, and agent system that will be built.
+> **Status: architecture / pre-production design**
+>
+> This repository documents Axverse as one external surface of the unified AxioGlobe construction-intelligence platform. It does **not** represent the whole AxioGlobe product and should not be read as a standalone 22-tool AI suite.
 
-## Overview
+## Position in the AxioGlobe ecosystem
 
-Axverse is a 22-tool ArchiCAD plugin suite that embeds live manufacturer data, AI intelligence, and real-time construction coordination directly inside ArchiCAD. It runs as a dockable panel — architects never leave their software. The intelligence runs underneath the interface they already know.
+AxioGlobe is one platform with a shared identity, entity model, project graph, Product DNA, evidence, permissions, events and audit history.
 
-## Architecture
+The primary external surfaces are:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    ARCHICAD (HOST)                       │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │           AXVERSE PLUGIN (C++ SDK)              │    │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────────┐  │    │
-│  │  │ Tool     │  │ Sync     │  │  AI Bridge   │  │    │
-│  │  │ Engine   │  │ Engine   │  │  (Claude /   │  │    │
-│  │  │ (22      │  │ (IFC /   │  │   Gemini)    │  │    │
-│  │  │  tools)  │  │  REST)   │  │              │  │    │
-│  │  └────┬─────┘  └────┬─────┘  └──────┬───────┘  │    │
-│  └───────┼─────────────┼───────────────┼───────────┘    │
-└──────────┼─────────────┼───────────────┼────────────────┘
-           │             │               │
-    ┌──────▼──────┐  ┌───▼───────┐  ┌───▼──────────────┐
-    │ AxioGlobe   │  │ Revit     │  │  Claude API      │
-    │ Backend API │  │ Sync      │  │  Gemini API      │
-    │ (Cloud Run) │  │ Bridge    │  │  (Vertex AI)     │
-    └──────┬──────┘  └───────────┘  └──────────────────┘
-           │
-    ┌──────▼──────────────────────────────────────────┐
-    │              AXIOGLOBE PLATFORM                  │
-    │  PostgreSQL · Cloud Storage · n8n Agents (39)   │
-    └─────────────────────────────────────────────────┘
-```
+- **Axverse** — architect / engineer BIM and design interface
+- **Axio Supply** — manufacturer and supplier surface
+- **Axio Build** — contractor / delivery / commercial surface
+- **PEER** — authenticated work-connected construction network and operating layer
 
-## The 22 ArchiPower Tools
+Internal capabilities such as Product DNA, validation, Product Intelligence, Project Pulse, AutoBid, AxioDocs, jobs/execution, matching and scoring are shared platform services rather than separate disconnected products.
 
-### Category 1 — Design Intelligence (8 tools)
-| # | Tool | AI Engine | Description |
-|---|------|-----------|-------------|
-| 01 | Live Financial Advisor | Claude Sonnet | Real-time fee entitlement from model value |
-| 02 | Automatic Variation Capture | Claude Sonnet | Detects model changes from client instructions |
-| 03 | Manufacturer Object Library | Gemini GDL Engine | 76,000+ verified manufacturer BIM objects |
-| 04 | Live BOQ Calculator | Claude + Gemini | Real-time bill of quantities from geometry |
-| 05 | Space Programme Validator | Claude Sonnet | Room-by-room compliance with client brief |
-| 06 | Planning Compliance Checker | Claude (180+ jurisdictions) | Automated planning regulation compliance |
-| 07 | Daylighting and Solar Analyser | Gemini (spatial simulation) | Live daylight factor and solar gain analysis |
-| 08 | Design Code Navigator | Claude Sonnet | Natural language building code compliance |
+## Axverse V1 information architecture
 
-### Category 2 — Documentation Intelligence (8 tools)
-| # | Tool | AI Engine | Description |
-|---|------|-----------|-------------|
-| 09 | Smart Drawing Manager | Claude Sonnet | Automatic revision tracking and issue sheets |
-| 10 | Specification Generator | Gemini 1.5 Flash | NBS/SABS/CSI spec from model elements |
-| 11 | Room Data Sheet Generator | Claude Sonnet | Auto-generated from ArchiCAD room objects |
-| 12 | Material Schedule Generator | Claude + Gemini | Live material schedule with manufacturer pricing |
-| 13 | Area Schedule Analyser | Claude Sonnet | GIA/NIA/IPMS/RICS all calculated simultaneously |
-| 14 | Presentation Package Generator | Gemini (visual) | Full client presentation in 90 minutes |
-| 15 | Contract Document Set | Claude + Gemini | Coordinated tender documents from model |
-| 16 | Post-Occupation Evaluation | Claude Sonnet | Automated building performance feedback loop |
+Axverse V1 keeps three permanent categories and **18 tools**.
 
-### Category 3 — Smart Native Tools (6 tools)
-| # | Tool | Description |
-|---|------|-------------|
-| 17 | Smart Delete | Structural check + compartmentation check before deletion |
-| 18 | Smart Stretch | Structural capacity check at new span before stretch |
-| 19 | Smart Rotate | Solar gain and structural load recalculation on rotation |
-| 20 | Smart Cut | Fire compartmentation + acoustic separation check |
-| 21 | Smart Paste | Manufacturer data relink + contextual suitability check |
-| 22 | Smart Mirror | Handed element detection + correct variant suggestion |
+### Design — 6
+1. Product DNA Browser
+2. Living Object Placement
+3. Smart Product Substitute
+4. Wall Assembly Builder
+5. Smart Openings
+6. Space Planner
 
-## Technology Stack
+### Technical — 5
+1. Model Health Check
+2. Accessibility Checker
+3. Daylight Preview
+4. Clearance Checker
+5. Product Compliance Check
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Plugin | ArchiCAD C++ SDK | Native plugin running inside ArchiCAD |
-| AI — Document | Claude Sonnet 4.6 | Code generation, compliance, specification |
-| AI — Visual | Gemini 1.5 Flash | GDL object generation, rendering |
-| Backend | Google Cloud Run | Containerised API — scales to zero |
-| Database | PostgreSQL (Cloud SQL) | Primary data store |
-| Storage | Google Cloud Storage | BIM files, manufacturer PDFs |
-| Agents | n8n (39 agents) | Workflow orchestration |
-| Cross-platform | IFC 4 | Revit-to-ArchiCAD live sync |
-| Mobile | React Native | Contractor site app |
+### Documentation — 7
+1. Smart Annotation
+2. Smart Dimensioning
+3. Drawing Coordinator
+4. Schedule Validator
+5. Specification Linker
+6. Issue Snapshot
+7. Publish Package
 
-## API Design
+PEER, Project Pulse, Opportunities and Notifications sit around Axverse as platform services; they are not a fourth Axverse category.
 
-```
-POST /api/v1/gdl/process
-  Input: manufacturer_pdf (base64), product_category
-  Output: gdl_object (ArchiCAD compatible), metadata, verification_status
+## V1 execution principle
 
-POST /api/v1/variation/detect
-  Input: model_change_event, project_id, client_instruction_id
-  Output: variation_notice_draft, scope_description, quantity
+The immediate objective is **not** to build all 18 tools at equal depth.
 
-GET /api/v1/boq/live/:project_id
-  Output: line_items[], total_cost, currency, last_updated
+The first production-quality proof is the end-to-end construction-intelligence loop:
 
-POST /api/v1/compliance/check
-  Input: element_type, dimensions, jurisdiction_code
-  Output: compliant (bool), clause_reference, remediation
+1. Manufacturer or supplier data enters AxioGlobe.
+2. AxioGlobe creates or updates canonical Product DNA.
+3. Validation checks the record and linked BIM content.
+4. A persistent job tracks processing.
+5. Axverse authenticates the user and project inside Archicad.
+6. Project Health Scan / Model Health capabilities read project and product intelligence.
+7. AxioGlobe identifies a real issue, inconsistency or missing fact.
+8. Evidence is shown and a safe action or repair is proposed.
+9. Human approval is required at consequential boundaries.
+10. Approved work is executed or routed for more information.
+11. Decision, evidence and outcome are recorded.
+12. PEER/platform associates the manufacturer, product, project and participant context.
 
-GET /api/v1/manufacturer/library
-  Query: category, country, performance_rating
-  Output: products[], gdl_object_url, verified_status
-```
+The first 5–7 capabilities should become reliable end-to-end before the remaining V1 tools are broadened.
 
-## The 39-Agent Orchestration System
+## Shared core
 
-AxioGlobe runs 39 AI agents through n8n orchestration. Key agents include:
+Axverse consumes the same AxioGlobe Core used by the other surfaces:
 
-- **Agent 1 — PA Agent**: Daily briefings, task management, email drafting
-- **Agent 8 — Lead Scraper**: Manufacturer and contractor database building
-- **Agent 12 — GDL Generator**: PDF to ArchiCAD object pipeline
-- **Agent 15 — Compliance Checker**: 180+ jurisdiction code database
-- **Agent 23 — Variation Detector**: Model change to variation notice pipeline
-- **Agent 31 — Drawing Alert**: ArchiCAD change to contractor notification
-- **Agent 39 — Property Connector**: BIM model to property listing pipeline
+- Identity, organisations and permissions
+- Projects and project graph
+- Products and canonical Product DNA
+- BIM objects and derived artifacts
+- Validation, issues, decisions, actions and approvals
+- Evidence and outcome history
+- Events and notifications
+- Jobs / controlled execution
+- Relevance, matching and trust intelligence
 
-## Company
+## BIM execution environments
 
-**AxioGlobe (PTY) Ltd**  
-Registration: 2026/437531/07  
-Incorporated: June 2026 — CIPC South Africa  
-Headquarters: Polokwane, Limpopo, South Africa  
-Website: https://axioglobe.co.za  
-Contact: info@axioglobe.co.za  
+- **Archicad** is the first professional execution environment.
+- **Revit** is a later shared-core client using the same canonical cloud truth.
+- GDL/GSM, Revit families, IFC and web/API representations are **derived artifacts**, not the canonical product record.
 
-## Founder
+## Engineering principles
 
-**Tebogo Boshomane** — Founder and CEO  
-LinkedIn: https://www.linkedin.com/in/tebogo-boshomane-873468231  
+- Product DNA is canonical and software-neutral.
+- AI may interpret and propose; deterministic systems enforce schema, calculations, permissions and release gates.
+- Missing or conflicting source data must become a visible exception rather than an invented value.
+- Consequential actions require explicit approval.
+- Decisions and outcomes must be auditable.
+- Public capability claims must match demonstrated repository evidence and tests.
+
+## Current priority
+
+1. Platform foundation
+2. Product DNA
+3. Lightweight jobs / execution
+4. Validation
+5. Axverse Project Health / Model Health proof
+6. Evidence, approval and audit
+7. PEER connection
+8. Remaining Axverse V1 capabilities
+
+## Repository scope
+
+This repository is a **public architecture reference** for Axverse. Production application code, credentials, customer data and proprietary implementation details must not be placed here.
 
 ---
-*This repository documents planned architecture. AxioGlobe is in pre-build technical design phase.*
+AxioGlobe (Pty) Ltd · South Africa · https://axioglobe.co.za
